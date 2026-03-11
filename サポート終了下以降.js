@@ -40,7 +40,9 @@ function moveSupportEndedRows_AllSheets() {
 
       if (status === "SF終了") {
         rowsSFEnd.push(row);
-        bgSFEnd.push(bgRow);
+        // SF終了行をグレー（#d9d9d9）に設定
+        const grayRow = new Array(row.length).fill("#d9d9d9");
+        bgSFEnd.push(grayRow);
       } else if (status === "アシサポ終了") {
         rowsAssistEnd.push(row);
         bgAssistEnd.push(bgRow);
@@ -58,5 +60,30 @@ function moveSupportEndedRows_AllSheets() {
     // 指定したA列〜E列の範囲のみを上書き更新（F列以降はそのまま維持）
     sheet.getRange(1, 1, newValues.length, 5).setValues(newValues);
     sheet.getRange(1, 1, newBackgrounds.length, 5).setBackgrounds(newBackgrounds);
+  }
+}
+
+/**
+ * 編集時に自動実行されるトリガー
+ */
+function onEdit(e) {
+  const sheet = e.source.getActiveSheet();
+  const sheetName = sheet.getName();
+  const range = e.range;
+  const col = range.getColumn();
+
+  // 設定にあるシートかつ、ステータス列（3列目 = Index 2 + 1）が編集された場合のみ実行
+  const config = {
+    "上村②": 3,
+    "小野田": 3,
+    "澤口": 3,
+    "定井": 3,
+    "宮脇": 3,
+    "下間": 3,
+    "GATE": 3
+  };
+
+  if (config[sheetName] && col === config[sheetName]) {
+    moveSupportEndedRows_AllSheets();
   }
 }
