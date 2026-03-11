@@ -1,0 +1,4 @@
+# .gitignore への追記
+.clasp.json
+node_modules/
+.clasp.json.tmp
