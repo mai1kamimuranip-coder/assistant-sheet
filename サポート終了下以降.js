@@ -41,10 +41,10 @@ function onEdit(e) {
   const targetRange = sheet.getRange(row, 1, 1, 5);
   
   // ステータスに応じて背景色を設定
-  if (statusStr === "アシサポ終了") {
-    targetRange.setBackground("#D1ABAA");
-  } else if (statusStr === "SF終了") {
-    // SF終了時は既存の色を維持するため何もしない（変更なし）
+  if (statusStr === "SF終了") {
+    targetRange.setBackground("#d9d9d9"); // SF終了はグレー
+  } else if (statusStr === "アシサポ終了") {
+    // 追加要件: 変更なし（以前設定したピンクは無効化）
   } else {
     // その他のステータスに戻した場合は白（リセット）にする
     targetRange.setBackground("#ffffff");
