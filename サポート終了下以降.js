@@ -44,7 +44,7 @@ function onEdit(e) {
   if (statusStr === "SF終了") {
     targetRange.setBackground("#d9d9d9"); // SF終了はグレー
   } else if (statusStr === "アシサポ終了") {
-    // 追加要件: 変更なし（以前設定したピンクは無効化）
+    targetRange.setBackground("#D1ABAA"); // アシサポ終了はピンク系
   } else {
     // その他のステータスに戻した場合は白（リセット）にする
     targetRange.setBackground("#ffffff");
