@@ -1,6 +1,62 @@
+/**
+ * スプレッドシートを開いたときに実行される処理（カスタムメニューの追加）
+ */
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('⚙管理ツール更新')
+    .addItem('終了行を下に移動する', 'moveSupportEndedRows_AllSheets')
+    .addToUi();
+}
+
+/**
+ * 編集時に自動実行されるトリガー（色変更のみ担当）
+ */
+function onEdit(e) {
+  const sheet = e.source.getActiveSheet();
+  const sheetName = sheet.getName();
+  const range = e.range;
+  const row = range.getRow();
+  const col = range.getColumn();
+
+  // 対象シートとステータス列（インデックスに+1した値）の定義
+  const config = {
+    "上村②": 3,
+    "小野田": 3,
+    "澤口": 3,
+    "定井": 3,
+    "宮脇": 3,
+    "下間": 3,
+    "GATE": 3
+  };
+
+  // 1行目（ヘッダー）や対象外シート・列の場合は何もしない
+  if (row < 2 || !config[sheetName] || col !== config[sheetName]) {
+    return;
+  }
+
+  // 入力されたステータス値を取得
+  const statusStr = String(range.getValue() || "").trim();
+  
+  // 色を変更する範囲（A列〜E列）を取得
+  const targetRange = sheet.getRange(row, 1, 1, 5);
+  
+  // ステータスに応じて背景色を設定
+  if (statusStr === "アシサポ終了") {
+    targetRange.setBackground("#D1ABAA");
+  } else if (statusStr === "SF終了") {
+    // SF終了時は既存の色を維持するため何もしない（変更なし）
+  } else {
+    // その他のステータスに戻した場合は白（リセット）にする
+    targetRange.setBackground("#ffffff");
+  }
+}
+
+/**
+ * 終了行を下に移動する処理（手動、またはカスタムメニューから実行）
+ */
 function moveSupportEndedRows_AllSheets() {
   const config = {
-    "上村②": 2,
+    "上村②": 2, // C列のインデックス
     "小野田": 2,
     "澤口": 2,
     "定井": 2,
@@ -33,17 +89,16 @@ function moveSupportEndedRows_AllSheets() {
     let bgAssistEnd = [];
     let bgSFEnd = [];
 
+    // 行の色を保持したまま各配列に振り分ける
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
       const bgRow = backgrounds[i];
-      const status = row[colIndex];
+      const statusStr = String(row[colIndex] || "").trim();
 
-      if (status === "SF終了") {
+      if (statusStr === "SF終了") {
         rowsSFEnd.push(row);
-        // SF終了行をグレー（#d9d9d9）に設定
-        const grayRow = new Array(row.length).fill("#d9d9d9");
-        bgSFEnd.push(grayRow);
-      } else if (status === "アシサポ終了") {
+        bgSFEnd.push(bgRow);
+      } else if (statusStr === "アシサポ終了") {
         rowsAssistEnd.push(row);
         bgAssistEnd.push(bgRow);
       } else {
@@ -57,33 +112,8 @@ function moveSupportEndedRows_AllSheets() {
     const newValues = [headers].concat(rowsNormal).concat(rowsAssistEnd).concat(rowsSFEnd);
     const newBackgrounds = [bgHeaders].concat(bgNormal).concat(bgAssistEnd).concat(bgSFEnd);
 
-    // 指定したA列〜E列の範囲のみを上書き更新（F列以降はそのまま維持）
+    // 指定したA列〜E列の範囲のみを上書き更新（色も同時に復元）
     sheet.getRange(1, 1, newValues.length, 5).setValues(newValues);
     sheet.getRange(1, 1, newBackgrounds.length, 5).setBackgrounds(newBackgrounds);
-  }
-}
-
-/**
- * 編集時に自動実行されるトリガー
- */
-function onEdit(e) {
-  const sheet = e.source.getActiveSheet();
-  const sheetName = sheet.getName();
-  const range = e.range;
-  const col = range.getColumn();
-
-  // 設定にあるシートかつ、ステータス列（3列目 = Index 2 + 1）が編集された場合のみ実行
-  const config = {
-    "上村②": 3,
-    "小野田": 3,
-    "澤口": 3,
-    "定井": 3,
-    "宮脇": 3,
-    "下間": 3,
-    "GATE": 3
-  };
-
-  if (config[sheetName] && col === config[sheetName]) {
-    moveSupportEndedRows_AllSheets();
   }
 }
